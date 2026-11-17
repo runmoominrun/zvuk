@@ -1,0 +1,1774 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Громкость и частота звука</title>
+
+<style>
+:root {
+  --bg:#e9eef3;
+  --panel:#ffffff;
+  --panel2:#f4f7fb;
+  --panel3:#e9eff6;
+  --text:#17212d;
+  --muted:#647386;
+  --border:#cbd5e0;
+  --blue:#1677e8;
+  --cyan:#16b8c9;
+  --purple:#9061ed;
+  --green:#19b982;
+  --red:#ec6076;
+  --track:#d9e2ed;
+  --grid:rgba(92,119,150,.13);
+  --shadow:0 5px 22px rgba(30,50,75,.07);
+}
+
+body.dark {
+  --bg:#141b27;
+  --panel:#202b3a;
+  --panel2:#192331;
+  --panel3:#29384b;
+  --text:#edf3fb;
+  --muted:#a0afc1;
+  --border:#39495d;
+  --blue:#48a2ff;
+  --cyan:#27d0dc;
+  --purple:#b18bff;
+  --green:#35d69c;
+  --red:#ff7187;
+  --track:#405168;
+  --grid:rgba(160,185,215,.12);
+  --shadow:0 5px 22px rgba(0,0,0,.2);
+}
+
+* {
+  box-sizing:border-box;
+}
+
+html,body {
+  width:100%;
+  height:100%;
+  margin:0;
+  overflow:hidden;
+}
+
+body {
+  padding:10px 17px 24px;
+  background:var(--bg);
+  color:var(--text);
+  font-family:"Segoe UI",Arial,sans-serif;
+  transition:background .3s,color .3s;
+}
+
+button,input {
+  font:inherit;
+}
+
+.app {
+  width:100%;
+  max-width:1400px;
+  height:100%;
+  margin:auto;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+}
+
+/* =========================================
+   ЗАГОЛОВОК
+========================================= */
+
+header {
+  position:relative;
+  text-align:center;
+  flex-shrink:0;
+  margin:0 0 10px;
+  padding:0 60px;
+}
+
+h1 {
+  margin:0;
+  font-size:clamp(25px,3vw,39px);
+  font-weight:850;
+  letter-spacing:-.8px;
+  background:linear-gradient(
+    100deg,
+    #1476e8,
+    #19b9c9 43%,
+    #9061ed 77%,
+    #e65e91
+  );
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+
+.subtitle {
+  margin-top:3px;
+  color:var(--muted);
+  font-size:13px;
+}
+
+.theme-btn {
+  position:absolute;
+  right:0;
+  top:0;
+  width:39px;
+  height:39px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:var(--panel);
+  color:var(--text);
+  cursor:pointer;
+  font-size:20px;
+  box-shadow:var(--shadow);
+}
+
+/* =========================================
+   ОСНОВНАЯ КАРТОЧКА
+========================================= */
+
+.main-card {
+  flex:1;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:18px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+
+/* =========================================
+   ВЕРХНЯЯ ОБЛАСТЬ
+========================================= */
+
+.display {
+  flex:1;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  padding:10px 22px 7px;
+}
+
+.top-info {
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  gap:12px;
+  flex-shrink:0;
+  min-height:68px;
+}
+
+.section-label {
+  color:var(--muted);
+  font-size:12px;
+  font-weight:750;
+  letter-spacing:.7px;
+  text-transform:uppercase;
+}
+
+.frequency-display {
+  text-align:center;
+  min-width:180px;
+}
+
+.frequency-number {
+  font-size:clamp(37px,5vw,58px);
+  line-height:1;
+  font-weight:850;
+  letter-spacing:-2px;
+  font-variant-numeric:tabular-nums;
+  color:var(--blue);
+}
+
+.frequency-unit {
+  font-size:20px;
+  font-weight:700;
+  margin-left:4px;
+  color:var(--text);
+}
+
+.frequency-type {
+  margin-top:4px;
+  font-size:12px;
+  font-weight:650;
+  color:var(--muted);
+}
+
+/* =========================================
+   КНОПКИ ЗВУКА
+========================================= */
+
+.sound-buttons {
+  justify-self:end;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.play-btn {
+  border:none;
+  border-radius:11px;
+  padding:11px 16px;
+  min-width:174px;
+  background:linear-gradient(105deg,#1478e8,#18b5c9);
+  color:white;
+  font-size:13px;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 4px 13px rgba(22,130,220,.2);
+  transition:filter .15s,transform .15s;
+  white-space:nowrap;
+}
+
+.play-btn:hover {
+  filter:brightness(1.08);
+  transform:translateY(-1px);
+}
+
+.play-btn.stop {
+  background:linear-gradient(105deg,#e34e6c,#e77d55);
+}
+
+/* =========================================
+   ИНФОРМАЦИОННЫЕ ПОКАЗАТЕЛИ
+========================================= */
+
+.stats {
+  display:grid;
+  grid-template-columns:1fr 1fr 1.25fr;
+  gap:9px;
+  flex-shrink:0;
+  margin:4px 0 9px;
+}
+
+.stat {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-height:35px;
+  padding:5px 9px;
+  border:1px solid var(--border);
+  background:var(--panel2);
+  border-radius:9px;
+  font-size:12px;
+  white-space:nowrap;
+}
+
+.stat-label {
+  color:var(--muted);
+}
+
+.stat-value {
+  font-weight:800;
+  font-variant-numeric:tabular-nums;
+}
+
+.stat-value.period {
+  color:var(--purple);
+}
+
+.stat-value.amplitude {
+  color:var(--blue);
+}
+
+/* =========================================
+   ЗАГОЛОВОК ГРАФИКА И МАСШТАБ
+========================================= */
+
+.graph-heading {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-shrink:0;
+  margin:1px 2px 7px;
+}
+
+.graph-title {
+  font-size:14px;
+  font-weight:800;
+}
+
+.scale-switch {
+  display:flex;
+  align-items:center;
+  gap:3px;
+  background:var(--panel3);
+  padding:3px;
+  border-radius:9px;
+}
+
+.scale-btn {
+  border:none;
+  background:transparent;
+  color:var(--muted);
+  border-radius:7px;
+  padding:6px 11px;
+  font-size:11px;
+  font-weight:750;
+  cursor:pointer;
+  white-space:nowrap;
+}
+
+.scale-btn.active {
+  background:var(--panel);
+  color:var(--blue);
+  box-shadow:0 1px 4px rgba(0,0,0,.1);
+}
+
+/* =========================================
+   ГРАФИК
+========================================= */
+
+.graph-wrap {
+  position:relative;
+  flex:1;
+  min-height:110px;
+  width:100%;
+  background:var(--panel2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+}
+
+canvas {
+  width:100%;
+  height:100%;
+  display:block;
+}
+
+.graph-bottom {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  color:var(--muted);
+  font-size:10px;
+  padding:6px 4px 0;
+  flex-shrink:0;
+}
+
+.graph-bottom span:last-child {
+  text-align:right;
+}
+
+/* =========================================
+   ПАНЕЛЬ УПРАВЛЕНИЯ
+========================================= */
+
+.control-area {
+  flex-shrink:0;
+  border-top:1px solid var(--border);
+  background:var(--panel2);
+  padding:12px 25px 13px;
+}
+
+.controls-heading {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:13px;
+  font-weight:800;
+  margin-bottom:10px;
+}
+
+.sliders {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:35px;
+}
+
+.control {
+  min-width:0;
+}
+
+.control-top {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:9px;
+}
+
+.control-name {
+  font-size:14px;
+  font-weight:750;
+}
+
+.control-value {
+  font-size:16px;
+  font-weight:850;
+  color:var(--blue);
+  font-variant-numeric:tabular-nums;
+}
+
+.volume-value {
+  color:var(--purple);
+}
+
+input[type="range"] {
+  appearance:none;
+  -webkit-appearance:none;
+  width:100%;
+  height:8px;
+  border-radius:20px;
+  outline:none;
+  cursor:pointer;
+  background:var(--track);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance:none;
+  -webkit-appearance:none;
+  width:21px;
+  height:21px;
+  border-radius:50%;
+  background:var(--blue);
+  border:3px solid var(--panel);
+  box-shadow:0 1px 6px rgba(0,0,0,.25);
+  cursor:grab;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width:15px;
+  height:15px;
+  border-radius:50%;
+  background:var(--blue);
+  border:3px solid var(--panel);
+  box-shadow:0 1px 6px rgba(0,0,0,.25);
+  cursor:grab;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  background:var(--purple);
+}
+
+.volume-slider::-moz-range-thumb {
+  background:var(--purple);
+}
+
+.range-labels {
+  display:flex;
+  justify-content:space-between;
+  margin-top:6px;
+  color:var(--muted);
+  font-size:10px;
+}
+
+/* =========================================
+   БЫСТРЫЙ ВЫБОР ЧАСТОТЫ
+========================================= */
+
+.presets {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin-top:12px;
+  flex-wrap:wrap;
+}
+
+.presets-label {
+  font-size:11px;
+  color:var(--muted);
+  font-weight:700;
+  margin-right:3px;
+}
+
+.preset-btn {
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:var(--panel);
+  color:var(--text);
+  padding:6px 11px;
+  font-size:11px;
+  font-weight:750;
+  cursor:pointer;
+  transition:all .15s;
+}
+
+.preset-btn:hover {
+  border-color:var(--blue);
+  color:var(--blue);
+}
+
+.preset-btn.active {
+  background:var(--blue);
+  color:white;
+  border-color:var(--blue);
+}
+
+/* =========================================
+   ИНДИКАТОР СИГНАЛА
+========================================= */
+
+.signal-row {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:11px;
+}
+
+.signal-label {
+  color:var(--muted);
+  font-size:11px;
+  font-weight:700;
+  white-space:nowrap;
+}
+
+.signal-meter {
+  height:8px;
+  flex:1;
+  background:var(--track);
+  border-radius:20px;
+  overflow:hidden;
+}
+
+.signal-fill {
+  width:35%;
+  height:100%;
+  border-radius:20px;
+  background:linear-gradient(90deg,#1677e8,#20c3c8,#9061ed);
+  transition:width .12s;
+}
+
+.signal-percent {
+  min-width:38px;
+  text-align:right;
+  font-size:12px;
+  font-weight:850;
+  color:var(--purple);
+  font-variant-numeric:tabular-nums;
+}
+
+.hint {
+  text-align:center;
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.35;
+  margin-top:8px;
+}
+
+/* =========================================
+   ПОДПИСЬ
+========================================= */
+
+.signature {
+  position:fixed;
+  right:18px;
+  bottom:5px;
+  color:var(--muted);
+  font-size:11px;
+  letter-spacing:.3px;
+  opacity:.8;
+  pointer-events:none;
+}
+
+/* =========================================
+   АДАПТАЦИЯ
+========================================= */
+
+@media(max-width:750px) {
+  body {
+    padding:7px 8px 23px;
+  }
+
+  header {
+    padding:0 42px;
+    margin-bottom:7px;
+  }
+
+  h1 {
+    font-size:22px;
+  }
+
+  .subtitle {
+    font-size:11px;
+  }
+
+  .display {
+    padding:8px 9px 6px;
+  }
+
+  .top-info {
+    grid-template-columns:1fr auto;
+    min-height:65px;
+    gap:5px;
+  }
+
+  .section-label {
+    display:none;
+  }
+
+  .frequency-display {
+    grid-column:1;
+    grid-row:1;
+    min-width:0;
+    text-align:left;
+  }
+
+  .frequency-number {
+    font-size:36px;
+  }
+
+  .frequency-unit {
+    font-size:16px;
+  }
+
+  .frequency-type {
+    font-size:10px;
+  }
+
+  .sound-buttons {
+    grid-column:2;
+    grid-row:1;
+    gap:5px;
+  }
+
+  .play-btn {
+    min-width:0;
+    padding:10px;
+    font-size:11px;
+  }
+
+  .stats {
+    gap:4px;
+  }
+
+  .stat {
+    flex-direction:column;
+    gap:2px;
+    font-size:10px;
+    min-height:38px;
+    padding:4px;
+  }
+
+  .graph-heading {
+    align-items:center;
+  }
+
+  .graph-title {
+    font-size:12px;
+  }
+
+  .scale-btn {
+    padding:5px 7px;
+    font-size:9px;
+  }
+
+  .graph-wrap {
+    min-height:85px;
+  }
+
+  .control-area {
+    padding:9px 11px;
+  }
+
+  .controls-heading {
+    margin-bottom:7px;
+  }
+
+  .sliders {
+    gap:14px;
+  }
+
+  .control-name {
+    font-size:12px;
+  }
+
+  .control-value {
+    font-size:13px;
+  }
+
+  .presets {
+    gap:4px;
+    margin-top:8px;
+  }
+
+  .presets-label {
+    width:100%;
+  }
+
+  .preset-btn {
+    padding:5px 7px;
+    font-size:9px;
+  }
+
+  .signal-row {
+    margin-top:8px;
+  }
+
+  .hint {
+    font-size:9px;
+    margin-top:6px;
+  }
+}
+
+@media(max-height:650px) {
+  body {
+    padding-top:4px;
+    padding-bottom:20px;
+  }
+
+  header {
+    margin-bottom:4px;
+  }
+
+  h1 {
+    font-size:25px;
+  }
+
+  .subtitle {
+    margin-top:1px;
+  }
+
+  .top-info {
+    min-height:55px;
+  }
+
+  .display {
+    padding-top:5px;
+  }
+
+  .stats {
+    margin:2px 0 5px;
+  }
+
+  .control-area {
+    padding-top:7px;
+    padding-bottom:7px;
+  }
+
+  .controls-heading {
+    margin-bottom:5px;
+  }
+
+  .presets {
+    margin-top:7px;
+  }
+
+  .signal-row {
+    margin-top:6px;
+  }
+
+  .hint {
+    margin-top:4px;
+  }
+}
+
+@media(max-width:480px) {
+  .sliders {
+    grid-template-columns:1fr;
+    gap:11px;
+  }
+
+  .presets {
+    gap:4px;
+  }
+
+  .preset-btn {
+    padding:5px 6px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+  <h1>Громкость и частота звука</h1>
+  <div class="subtitle">Интерактивная акустическая лаборатория</div>
+  <button class="theme-btn" id="themeBtn" title="Сменить тему">☾</button>
+</header>
+
+<main class="main-card">
+
+  <!-- ЭКРАН ГРАФИКА -->
+
+  <section class="display">
+
+    <div class="top-info">
+
+      <div class="section-label">Звуковой сигнал</div>
+
+      <div class="frequency-display">
+        <span class="frequency-number" id="frequencyNumber">10</span>
+        <span class="frequency-unit">Гц</span>
+        <div class="frequency-type" id="frequencyType">Инфразвук</div>
+      </div>
+
+      <div class="sound-buttons">
+
+        <button class="play-btn" id="playBtn">
+          ▶ Запустить звук
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- ФИЗИЧЕСКИЕ ПОКАЗАТЕЛИ -->
+
+    <div class="stats">
+
+      <div class="stat">
+        <span class="stat-label">Период T</span>
+        <span class="stat-value period" id="periodValue">0,1 с</span>
+      </div>
+
+      <div class="stat">
+        <span class="stat-label">Амплитуда</span>
+        <span class="stat-value amplitude" id="amplitudeValue">35 %</span>
+      </div>
+
+      <div class="stat">
+        <span class="stat-label">Диапазон</span>
+        <span class="stat-value" id="rangeValue">Инфразвук</span>
+      </div>
+
+    </div>
+
+    <!-- МАСШТАБ ГРАФИКА -->
+
+    <div class="graph-heading">
+
+      <div class="graph-title">График звуковых колебаний</div>
+
+      <div class="scale-switch">
+
+        <button class="scale-btn active" id="autoScaleBtn">
+          Автомасштаб
+        </button>
+
+        <button class="scale-btn" id="realScaleBtn">
+          Реальное время
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="graph-wrap">
+      <canvas id="graph"></canvas>
+    </div>
+
+    <div class="graph-bottom">
+      <span>Смещение частиц среды</span>
+      <span id="timeCaption">Масштаб времени: автоматический</span>
+      <span>Время →</span>
+    </div>
+
+  </section>
+
+  <!-- ПАНЕЛЬ УПРАВЛЕНИЯ -->
+
+  <section class="control-area">
+
+    <div class="controls-heading">
+      <span>Настройки звука</span>
+      <span style="color:var(--muted);font-size:10px;font-weight:500">
+        Изменяйте параметры во время звучания
+      </span>
+    </div>
+
+    <div class="sliders">
+
+      <!-- ЧАСТОТА -->
+
+      <div class="control">
+
+        <div class="control-top">
+          <label class="control-name" for="frequency">
+            Частота
+          </label>
+
+          <span class="control-value" id="frequencyValue">
+            10 Гц
+          </span>
+        </div>
+
+        <input
+          type="range"
+          id="frequency"
+          min="10"
+          max="21000"
+          step="1"
+          value="10"
+        >
+
+        <div class="range-labels">
+          <span>10 Гц</span>
+          <span>21 000 Гц</span>
+        </div>
+
+      </div>
+
+      <!-- ГРОМКОСТЬ -->
+
+      <div class="control">
+
+        <div class="control-top">
+          <label class="control-name" for="volume">
+            Громкость
+          </label>
+
+          <span class="control-value volume-value" id="volumeValue">
+            35 %
+          </span>
+        </div>
+
+        <input
+          type="range"
+          class="volume-slider"
+          id="volume"
+          min="0"
+          max="100"
+          step="1"
+          value="35"
+        >
+
+        <div class="range-labels">
+          <span>0 %</span>
+          <span>100 %</span>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- БЫСТРЫЙ ВЫБОР -->
+
+    <div class="presets">
+
+      <span class="presets-label">Быстрый выбор частоты:</span>
+
+      <button class="preset-btn" data-frequency="10">10 Гц</button>
+      <button class="preset-btn" data-frequency="20">20 Гц</button>
+      <button class="preset-btn" data-frequency="50">50 Гц</button>
+      <button class="preset-btn" data-frequency="100">100 Гц</button>
+      <button class="preset-btn" data-frequency="200">200 Гц</button>
+      <button class="preset-btn" data-frequency="261">261 Гц</button>
+      <button class="preset-btn" data-frequency="440">440 Гц</button>
+      <button class="preset-btn" data-frequency="523">523 Гц</button>
+      <button class="preset-btn" data-frequency="1000">1 000 Гц</button>
+      <button class="preset-btn" data-frequency="2000">2 000 Гц</button>
+      <button class="preset-btn" data-frequency="5000">5 000 Гц</button>
+      <button class="preset-btn" data-frequency="10000">10 000 Гц</button>
+      <button class="preset-btn" data-frequency="15000">15 000 Гц</button>
+      <button class="preset-btn" data-frequency="20000">20 000 Гц</button>
+      <button class="preset-btn" data-frequency="20500">20 500 Гц</button>
+      <button class="preset-btn" data-frequency="21000">21 000 Гц</button>
+
+    </div>
+
+    <!-- ИНДИКАТОР УРОВНЯ СИГНАЛА -->
+
+    <div class="signal-row">
+
+      <span class="signal-label">Уровень сигнала</span>
+
+      <div class="signal-meter">
+        <div class="signal-fill" id="signalFill"></div>
+      </div>
+
+      <span class="signal-percent" id="signalPercent">35 %</span>
+
+    </div>
+
+    <div class="hint">
+      Процент громкости показывает уровень цифрового сигнала.
+      Фактическая громкость зависит от устройства и его настроек.
+      Граница ультразвука условно принята равной 20 000 Гц.
+    </div>
+
+  </section>
+
+</main>
+</div>
+
+<div class="signature">ЕВАлексеева</div>
+
+<script>
+
+// ============================================
+// 1. ЭЛЕМЕНТЫ И СОСТОЯНИЕ
+// ============================================
+
+const frequencySlider = document.getElementById("frequency");
+const volumeSlider = document.getElementById("volume");
+
+const frequencyNumber = document.getElementById("frequencyNumber");
+const frequencyValue = document.getElementById("frequencyValue");
+const volumeValue = document.getElementById("volumeValue");
+
+const frequencyType = document.getElementById("frequencyType");
+const periodValue = document.getElementById("periodValue");
+const amplitudeValue = document.getElementById("amplitudeValue");
+const rangeValue = document.getElementById("rangeValue");
+
+const playBtn = document.getElementById("playBtn");
+const themeBtn = document.getElementById("themeBtn");
+
+const autoScaleBtn = document.getElementById("autoScaleBtn");
+const realScaleBtn = document.getElementById("realScaleBtn");
+
+const timeCaption = document.getElementById("timeCaption");
+
+const signalFill = document.getElementById("signalFill");
+const signalPercent = document.getElementById("signalPercent");
+
+const canvas = document.getElementById("graph");
+const ctx = canvas.getContext("2d");
+
+let audioContext = null;
+let oscillator = null;
+let gainNode = null;
+
+let isPlaying = false;
+
+let currentFrequency = 10;
+let currentVolume = 35;
+
+let scaleMode = "auto";
+
+let animationTime = 0;
+let previousFrame = 0;
+let animationId = null;
+
+// Максимальная цифровая амплитуда.
+// Ограничение помогает избежать чрезмерного уровня
+// выходного сигнала независимо от громкости устройства.
+
+const MAX_AUDIO_GAIN = 0.20;
+
+// Фиксированное окно времени для режима «Реальное время»: 0,01 секунды.
+
+const REAL_TIME_WINDOW = 0.01;
+
+// ============================================
+// 2. ФОРМАТИРОВАНИЕ ЧИСЕЛ
+// ============================================
+
+function formatNumber(n) {
+  return Math.round(n).toLocaleString("ru-RU");
+}
+
+function formatPeriod(frequency) {
+
+  const period = 1 / frequency;
+
+  if (period >= 0.01) {
+    return period.toLocaleString("ru-RU", {
+      maximumFractionDigits: 4
+    }) + " с";
+  }
+
+  const milliseconds = period * 1000;
+
+  return milliseconds.toLocaleString("ru-RU", {
+    maximumFractionDigits: 4
+  }) + " мс";
+}
+
+// ============================================
+// 3. ОПРЕДЕЛЕНИЕ ДИАПАЗОНА
+// ============================================
+
+function getFrequencyRange(frequency) {
+
+  if (frequency < 20) {
+    return "Инфразвук";
+  }
+
+  if (frequency > 20000) {
+    return "Ультразвук";
+  }
+
+  return "Слышимый диапазон";
+}
+
+// ============================================
+// 4. ОБНОВЛЕНИЕ ИНФОРМАЦИИ
+// ============================================
+
+function updateLabels() {
+
+  currentFrequency = Number(frequencySlider.value);
+  currentVolume = Number(volumeSlider.value);
+
+  frequencyNumber.textContent =
+    formatNumber(currentFrequency);
+
+  frequencyValue.textContent =
+    formatNumber(currentFrequency) + " Гц";
+
+  volumeValue.textContent =
+    currentVolume + " %";
+
+  // Тип звука
+
+  if (currentFrequency < 20) {
+    frequencyType.textContent = "Инфразвук";
+  } else if (currentFrequency > 20000) {
+    frequencyType.textContent = "Ультразвук";
+  } else {
+    frequencyType.textContent = "Слышимый диапазон";
+  }
+
+  rangeValue.textContent =
+    getFrequencyRange(currentFrequency);
+
+  // Период
+
+  periodValue.textContent =
+    formatPeriod(currentFrequency);
+
+  // Амплитуда графика
+
+  amplitudeValue.textContent =
+    currentVolume + " %";
+
+  // Окраска ползунка частоты
+
+  const frequencyPercent =
+    (currentFrequency - 10) / (21000 - 10) * 100;
+
+  frequencySlider.style.background =
+    `linear-gradient(to right,
+      var(--blue) ${frequencyPercent}%,
+      var(--track) 0%)`;
+
+  // Окраска ползунка громкости
+
+  volumeSlider.style.background =
+    `linear-gradient(to right,
+      var(--purple) ${currentVolume}%,
+      var(--track) 0%)`;
+
+  // Индикатор уровня сигнала
+
+  signalFill.style.width =
+    currentVolume + "%";
+
+  signalPercent.textContent =
+    currentVolume + " %";
+
+  // Обновление частоты генератора
+
+  if (isPlaying && oscillator && audioContext) {
+
+    oscillator.frequency.setTargetAtTime(
+      currentFrequency,
+      audioContext.currentTime,
+      0.025
+    );
+
+  }
+
+  // Обновление громкости
+
+  updateAudioGain();
+
+  updatePresetButtons();
+}
+
+// ============================================
+// 5. БЫСТРЫЙ ВЫБОР ЧАСТОТЫ
+// ============================================
+
+function updatePresetButtons() {
+
+  document.querySelectorAll(".preset-btn").forEach(btn => {
+
+    const value = Number(btn.dataset.frequency);
+
+    btn.classList.toggle(
+      "active",
+      value === currentFrequency
+    );
+
+  });
+
+}
+
+document.querySelectorAll(".preset-btn").forEach(btn => {
+
+  btn.addEventListener("click", () => {
+
+    frequencySlider.value = btn.dataset.frequency;
+
+    updateLabels();
+
+  });
+
+});
+
+// ============================================
+// 6. ПОЛЗУНКИ
+// ============================================
+
+frequencySlider.addEventListener("input", updateLabels);
+volumeSlider.addEventListener("input", updateLabels);
+
+// ============================================
+// 7. УПРАВЛЕНИЕ ГРОМКОСТЬЮ
+// ============================================
+
+function updateAudioGain() {
+
+  if (!gainNode || !audioContext) return;
+
+  const targetGain =
+    currentVolume / 100 * MAX_AUDIO_GAIN;
+
+  gainNode.gain.setTargetAtTime(
+    targetGain,
+    audioContext.currentTime,
+    0.035
+  );
+
+}
+
+// ============================================
+// 8. ЗАПУСК ЗВУКА
+// ============================================
+
+async function startSound() {
+
+  try {
+
+    const AudioContextClass =
+      window.AudioContext || window.webkitAudioContext;
+
+    if (!AudioContextClass) {
+
+      alert("Ваш браузер не поддерживает Web Audio API.");
+      return;
+
+    }
+
+    if (!audioContext) {
+
+      audioContext = new AudioContextClass();
+
+    }
+
+    if (audioContext.state === "suspended") {
+
+      await audioContext.resume();
+
+    }
+
+    oscillator = audioContext.createOscillator();
+
+    gainNode = audioContext.createGain();
+
+    oscillator.type = "sine";
+
+    oscillator.frequency.value =
+      currentFrequency;
+
+    const initialGain =
+      currentVolume / 100 * MAX_AUDIO_GAIN;
+
+    gainNode.gain.setValueAtTime(
+      0,
+      audioContext.currentTime
+    );
+
+    gainNode.gain.linearRampToValueAtTime(
+      initialGain,
+      audioContext.currentTime + 0.08
+    );
+
+    oscillator.connect(gainNode);
+
+    gainNode.connect(audioContext.destination);
+
+    oscillator.start();
+
+    isPlaying = true;
+
+    playBtn.textContent = "■ Остановить";
+    playBtn.classList.add("stop");
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Не удалось запустить звук. Проверьте настройки браузера."
+    );
+
+  }
+
+}
+
+// ============================================
+// 9. ОСТАНОВКА ЗВУКА
+// ============================================
+
+function stopSound() {
+
+  if (!isPlaying) return;
+
+  isPlaying = false;
+
+  if (audioContext && gainNode && oscillator) {
+
+    const now = audioContext.currentTime;
+
+    gainNode.gain.cancelScheduledValues(now);
+
+    gainNode.gain.setValueAtTime(
+      gainNode.gain.value,
+      now
+    );
+
+    gainNode.gain.linearRampToValueAtTime(
+      0,
+      now + 0.06
+    );
+
+    const oldOscillator = oscillator;
+    const oldGain = gainNode;
+
+    oscillator = null;
+    gainNode = null;
+
+    oldOscillator.stop(now + 0.07);
+
+    setTimeout(() => {
+
+      try {
+        oldOscillator.disconnect();
+        oldGain.disconnect();
+      } catch (e) {}
+
+    }, 120);
+
+  }
+
+  playBtn.textContent = "▶ Запустить звук";
+  playBtn.classList.remove("stop");
+
+}
+
+// ============================================
+// 10. КНОПКА ЗАПУСКА
+// ============================================
+
+playBtn.addEventListener("click", () => {
+
+  if (isPlaying) {
+    stopSound();
+  } else {
+    startSound();
+  }
+
+});
+
+// ============================================
+// 12. МАСШТАБ ВРЕМЕНИ
+// ============================================
+
+function setScaleMode(mode) {
+
+  scaleMode = mode;
+
+  autoScaleBtn.classList.toggle(
+    "active",
+    mode === "auto"
+  );
+
+  realScaleBtn.classList.toggle(
+    "active",
+    mode === "real"
+  );
+
+  if (mode === "auto") {
+
+    timeCaption.textContent =
+      "Масштаб времени: автоматический";
+
+  } else {
+
+    timeCaption.textContent =
+      "Окно времени: 0,01 с";
+
+  }
+
+}
+
+autoScaleBtn.addEventListener("click", () => {
+  setScaleMode("auto");
+});
+
+realScaleBtn.addEventListener("click", () => {
+  setScaleMode("real");
+});
+
+// ============================================
+// 13. ЧИСЛО ВИДИМЫХ КОЛЕБАНИЙ
+// ============================================
+
+function getVisibleCycles(frequency) {
+
+  if (scaleMode === "real") {
+
+    // Зафиксированное временное окно 0,01 секунды.
+
+    return frequency * REAL_TIME_WINDOW;
+
+  }
+
+  // Автоматический масштаб:
+  // 10 Гц -> 0,25 периода
+  // 21 000 Гц -> 32 периода
+
+  const minF = 10;
+  const maxF = 21000;
+
+  const t =
+    Math.log(frequency / minF) /
+    Math.log(maxF / minF);
+
+  return 0.25 + 31.75 * t;
+
+}
+
+// ============================================
+// 14. РАЗМЕР CANVAS
+// ============================================
+
+function resizeCanvas() {
+
+  const rect = canvas.getBoundingClientRect();
+
+  const dpr = Math.min(
+    window.devicePixelRatio || 1,
+    2
+  );
+
+  canvas.width = Math.round(rect.width * dpr);
+  canvas.height = Math.round(rect.height * dpr);
+
+  ctx.setTransform(
+    dpr,
+    0,
+    0,
+    dpr,
+    0,
+    0
+  );
+
+}
+
+const resizeObserver = new ResizeObserver(resizeCanvas);
+
+resizeObserver.observe(canvas);
+
+// ============================================
+// 15. ПОСТРОЕНИЕ ГРАФИКА
+// ============================================
+
+function drawGraph(timestamp) {
+
+  if (!previousFrame) {
+    previousFrame = timestamp;
+  }
+
+  const dt = Math.min(
+    (timestamp - previousFrame) / 1000,
+    0.05
+  );
+
+  previousFrame = timestamp;
+
+  // Движение волны
+
+  animationTime += dt * 1.25;
+
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+
+  if (!width || !height) {
+
+    animationId = requestAnimationFrame(drawGraph);
+    return;
+
+  }
+
+  ctx.clearRect(0, 0, width, height);
+
+  const styles = getComputedStyle(document.body);
+
+  const textColor =
+    styles.getPropertyValue("--muted").trim();
+
+  const borderColor =
+    styles.getPropertyValue("--border").trim();
+
+  const blueColor =
+    styles.getPropertyValue("--blue").trim();
+
+  const cyanColor =
+    styles.getPropertyValue("--cyan").trim();
+
+  const gridColor =
+    styles.getPropertyValue("--grid").trim();
+
+  // Границы графика
+
+  const left = 48;
+  const right = width - 25;
+  const top = 24;
+  const bottom = height - 32;
+
+  const centerY = (top + bottom) / 2;
+
+  const graphWidth = right - left;
+  const graphHeight = bottom - top;
+
+  // ------------------------------------------
+  // ТОНКАЯ СЕТКА
+  // ------------------------------------------
+
+  ctx.save();
+
+  ctx.strokeStyle = gridColor;
+  ctx.lineWidth = 1;
+
+  // Вертикальные линии сетки
+
+  for (let i = 1; i < 10; i++) {
+
+    const x = left + graphWidth * i / 10;
+
+    ctx.beginPath();
+    ctx.moveTo(x, top);
+    ctx.lineTo(x, bottom);
+    ctx.stroke();
+
+  }
+
+  // Горизонтальные линии сетки
+
+  for (let i = 1; i < 5; i++) {
+
+    const y = top + graphHeight * i / 5;
+
+    ctx.beginPath();
+    ctx.moveTo(left, y);
+    ctx.lineTo(right, y);
+    ctx.stroke();
+
+  }
+
+  ctx.restore();
+
+  // ------------------------------------------
+  // ОСИ
+  // Без делений и единичных отрезков
+  // ------------------------------------------
+
+  ctx.save();
+
+  ctx.strokeStyle = borderColor;
+  ctx.lineWidth = 1.5;
+
+  ctx.beginPath();
+
+  ctx.moveTo(left, top - 5);
+  ctx.lineTo(left, bottom + 3);
+
+  ctx.lineTo(right + 8, bottom + 3);
+
+  ctx.stroke();
+
+  // Стрелка вертикальной оси
+
+  ctx.beginPath();
+
+  ctx.moveTo(left, top - 5);
+  ctx.lineTo(left - 5, top + 4);
+
+  ctx.moveTo(left, top - 5);
+  ctx.lineTo(left + 5, top + 4);
+
+  ctx.stroke();
+
+  // Стрелка горизонтальной оси
+
+  ctx.beginPath();
+
+  ctx.moveTo(right + 8, bottom + 3);
+  ctx.lineTo(right, bottom - 2);
+
+  ctx.moveTo(right + 8, bottom + 3);
+  ctx.lineTo(right, bottom + 8);
+
+  ctx.stroke();
+
+  ctx.restore();
+
+  // ------------------------------------------
+  // ЛИНИЯ РАВНОВЕСИЯ
+  // ------------------------------------------
+
+  ctx.save();
+
+  ctx.strokeStyle = borderColor;
+  ctx.lineWidth = 1;
+  ctx.setLineDash([5, 6]);
+
+  ctx.beginPath();
+
+  ctx.moveTo(left, centerY);
+  ctx.lineTo(right, centerY);
+
+  ctx.stroke();
+
+  ctx.restore();
+
+  // ------------------------------------------
+  // АМПЛИТУДА
+  // ------------------------------------------
+
+  const amplitude =
+    graphHeight * 0.39 * currentVolume / 100;
+
+  // ------------------------------------------
+  // ЧИСЛО ПЕРИОДОВ
+  // ------------------------------------------
+
+  const cycles =
+    getVisibleCycles(currentFrequency);
+
+  // Для высокой частоты автоматически
+  // увеличивается число точек построения.
+  // Это помогает сохранить плавность графика.
+
+  const samples = Math.max(
+    1600,
+    Math.ceil(graphWidth * 16)
+  );
+
+  const phase = animationTime;
+
+  // ------------------------------------------
+  // ПОСТРОЕНИЕ СИНУСОИДЫ
+  // ------------------------------------------
+
+  ctx.save();
+
+  ctx.beginPath();
+
+  for (let i = 0; i <= samples; i++) {
+
+    const progress = i / samples;
+
+    const x = left + graphWidth * progress;
+
+    const angle =
+      2 * Math.PI * cycles * progress + phase;
+
+    const y =
+      centerY - amplitude * Math.sin(angle);
+
+    if (i === 0) {
+
+      ctx.moveTo(x, y);
+
+    } else {
+
+      ctx.lineTo(x, y);
+
+    }
+
+  }
+
+  // Цветовой градиент
+
+  const gradient = ctx.createLinearGradient(
+    left, 0, right, 0
+  );
+
+  gradient.addColorStop(0, blueColor);
+  gradient.addColorStop(.5, cyanColor);
+  gradient.addColorStop(1, blueColor);
+
+  ctx.strokeStyle = gradient;
+  ctx.lineWidth = 2.8;
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+
+  // Мягкое свечение
+
+  ctx.shadowColor = blueColor;
+  ctx.shadowBlur = 7;
+
+  ctx.stroke();
+
+  ctx.restore();
+
+  // ------------------------------------------
+  // ПОДПИСИ ОСЕЙ
+  // ------------------------------------------
+
+  ctx.save();
+
+  ctx.fillStyle = textColor;
+  ctx.font = "12px Segoe UI, Arial";
+  ctx.textAlign = "center";
+
+  ctx.fillText("A", 19, top + 5);
+
+  ctx.restore();
+
+  animationId = requestAnimationFrame(drawGraph);
+
+}
+
+// ============================================
+// 16. ТЕМНАЯ ТЕМА
+// ============================================
+
+themeBtn.addEventListener("click", () => {
+
+  document.body.classList.toggle("dark");
+
+  const isDark =
+    document.body.classList.contains("dark");
+
+  themeBtn.textContent =
+    isDark ? "☀" : "☾";
+
+  themeBtn.title =
+    isDark ? "Светлая тема" : "Тёмная тема";
+
+});
+
+// ============================================
+// 17. ИНИЦИАЛИЗАЦИЯ
+// ============================================
+
+updateLabels();
+
+setScaleMode("auto");
+
+resizeCanvas();
+
+animationId = requestAnimationFrame(drawGraph);
+
+</script>
+
+</body>
+</html>
